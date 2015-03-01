@@ -1,0 +1,75 @@
+<html>
+  <head>
+    <title></title>
+    <style media="screen">
+      body {
+        background: #eee;
+      }
+      svg {
+        background: #fff;
+      }
+      svg circle {
+        fill: #ccc;
+      }
+      svg line {
+        stroke: #ccc;
+        stroke-linecap: round;
+        stroke-width: 2px
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="300" height="100" viewBox="0 0 300 100" xmlns="http://www.w3.org/2000/svg" version="1.1">
+      <circle cx="10" cy="50" r="10"></circle>
+      <circle cx="50" cy="50" r="10"></circle>
+      <circle cx="90" cy="30" r="10"></circle>
+      <circle cx="90" cy="70" r="10"></circle>
+      <circle cx="130" cy="50" r="10"></circle>
+      <line x1="20" y1="50" x2="40" y2="50" stroke="black" stroke-width="2" stroke-linecap="round" />
+      <line x1="60" y1="50" x2="80" y2="30" stroke="black" stroke-width="2" stroke-linecap="round" />
+      <line x1="60" y1="50" x2="80" y2="70" stroke="black" stroke-width="2" stroke-linecap="round" />
+      <line x1="100" y1="30" x2="120" y2="50" stroke="black" stroke-width="2" stroke-linecap="round" />
+      <line x1="100" y1="70" x2="120" y2="50" stroke="black" stroke-width="2" stroke-linecap="round" />
+    </svg>
+
+    <svg id="svg-1" width="300" height="100" viewBox="0 0 300 100" xmlns="http://www.w3.org/2000/svg" version="1.1">
+    </svg>
+
+    <script src="graph.js"></script>
+    <script src="layout.js"></script>
+    <script src="renderer.js"></script>
+    <script charset="utf-8">
+    var nodes = [
+      {id: 1},
+      {id: 21},
+      {id: 22},
+      {id: 31},
+      {id: 32},
+      {id: 33},
+      {id: 41},
+      {id: 42},
+      {id: 5}
+    ];
+
+    var edges = [
+      {from: 1, to: 21},
+      {from: 1, to: 22},
+      {from: 21, to: 31},
+      {from: 21, to: 32},
+      {from: 22, to: 33},
+      {from: 31, to: 41},
+      {from: 32, to: 41},
+      {from: 33, to: 42},
+      {from: 41, to: 5},
+      {from: 42, to: 5}
+    ];
+
+    var graph = new Graph(nodes, edges);
+    var layout = new DefaultLayout(graph, 300, 100);
+    var graphLayout = layout.topAligned();
+    var renderer = new Renderer(document.querySelector('#svg-1'), 300, 100, 10, 20);
+    renderer.render(graphLayout);
+    </script>
+
+  </body>
+</html>
