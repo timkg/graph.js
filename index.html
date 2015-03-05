@@ -2,14 +2,42 @@
   <head>
     <title></title>
     <style media="screen">
-      body {
-        background: #eee;
+      svg.stage {
+        float: left;
+        border: 1px solid #eee;
       }
-      svg {
-        background: #fff;
+      .toolbox svg {
+        border: none;
+        vertical-align: middle;
+      }
+      .toolbox {
+        display: inline-block;
+        padding: 10px;
+        float: left;
+      }
+      .toolbox-item.node {
+        font-family: Roboto;
+        font-size: 12px;
+        color: #999;
+      }
+      .toolbox-item.node p {
+        display: inline-block;
+        margin: 0;
+        padding: 0 0 0 3px;
+        line-height: 20px;
+        vertical-align: bottom;
+      }
+      .toolbox-item.node:hover {
+        cursor: pointer;
       }
       svg circle {
-        fill: #ccc;
+        fill: #7ec6ea;
+      }
+      svg circle.ui-node.util {
+        fill: #eee;
+      }
+      svg circle:hover {
+        opacity: 0.8;
       }
       svg line {
         stroke: #ccc;
@@ -19,21 +47,79 @@
     </style>
   </head>
   <body>
-    <svg width="300" height="100" viewBox="0 0 300 100" xmlns="http://www.w3.org/2000/svg" version="1.1">
-      <circle cx="10" cy="50" r="10"></circle>
-      <circle cx="50" cy="50" r="10"></circle>
-      <circle cx="90" cy="30" r="10"></circle>
-      <circle cx="90" cy="70" r="10"></circle>
-      <circle cx="130" cy="50" r="10"></circle>
-      <line x1="20" y1="50" x2="40" y2="50" stroke="black" stroke-width="2" stroke-linecap="round" />
-      <line x1="60" y1="50" x2="80" y2="30" stroke="black" stroke-width="2" stroke-linecap="round" />
-      <line x1="60" y1="50" x2="80" y2="70" stroke="black" stroke-width="2" stroke-linecap="round" />
-      <line x1="100" y1="30" x2="120" y2="50" stroke="black" stroke-width="2" stroke-linecap="round" />
-      <line x1="100" y1="70" x2="120" y2="50" stroke="black" stroke-width="2" stroke-linecap="round" />
-    </svg>
+    <script src="vendors/eventEmitter.js"></script>
+    <script src="node_modules/react/dist/react.js"></script>
+    <script src="node_modules/react/dist/JSXTransformer.js"></script>
 
-    <svg id="svg-1" width="300" height="100" viewBox="0 0 300 100" xmlns="http://www.w3.org/2000/svg" version="1.1">
-    </svg>
+    <script type="text/jsx" src="src/components/uiEdgeComponent.js"></script>
+    <script type="text/jsx" src="src/components/contentEdgeComponent.js"></script>
+    <script type="text/jsx" src="src/components/uiNodeComponent.js"></script>
+    <script type="text/jsx" src="src/components/uiDropTargetComponent.js"></script>
+    <script type="text/jsx" src="src/components/contentNodeComponent.js"></script>
+    <script type="text/jsx" src="src/components/toolboxComponent.js"></script>
+    <script type="text/jsx" src="src/components/stageComponent.js"></script>
+    <script type="text/jsx" src="src/components/appComponent.js"></script>
+    <script type="text/jsx" src="src/components/addNodeComponent.js"></script>
+
+    <script src="src/layoutProvider.js"></script>
+
+    <div id="container1">
+    </div>
+
+    <script type="text/jsx">
+      var dispatcher = new EventEmitter();
+      var layoutProvider = new LayoutProvider();
+
+      dispatcher.on('stage.ready', function (stage) {
+        layoutProvider.register(stage);
+      });
+
+      dispatcher.on('intent:drag', function (element, event) {
+        var container = document.createElement('div');
+        document.body.appendChild(container);
+        var draggable = React.render(
+          <AddNodeComponent />,
+          container
+        );
+        var elm = draggable.getDOMNode();
+        elm.style.position = 'fixed';
+        elm.style.left = (event.clientX - 10) + 'px';
+        elm.style.top = (event.clientY - 10) + 'px';
+
+        var lastTarget;
+        var mouseMoveCB = function (event) {
+          elm.style.left = (event.clientX - 10) + 'px';
+          elm.style.top = (event.clientY - 10) + 'px';
+          dispatcher.emit('showNodeDropArea', 300, 200, {id: 'awesome!', cx: 300, cy: 200});
+          lastTarget = event.target;
+        };
+
+        document.body.addEventListener('mousemove', mouseMoveCB, false);
+
+        var stage = document.querySelector('.stage');
+        var mouseUpCB = function (event) {
+          elm.remove();
+          dispatcher.emit('dropped', event);
+          dispatcher.emit('hideNodeDropArea', 300, 200);
+          document.body.removeEventListener('mousemove', mouseMoveCB);
+          document.body.removeEventListener('mouseup', mouseUpCB);
+        };
+        document.body.addEventListener('mouseup', mouseUpCB, false);
+
+      });
+
+      dispatcher.on('node.add', function (positionObject) {
+        console.log(positionObject)
+      });
+
+      var nodes = [];
+      var edges = [];
+
+      React.render(
+        <AppComponent nodes={nodes} edges={edges} />,
+        document.querySelector('#container1')
+      )
+    </script>
 
     <script src="graph.js"></script>
     <script src="layout.js"></script>
@@ -64,11 +150,13 @@
       {from: 42, to: 5}
     ];
 
+    /*
     var graph = new Graph(nodes, edges);
     var layout = new DefaultLayout(graph, 300, 100);
     var graphLayout = layout.topAligned();
     var renderer = new Renderer(document.querySelector('#svg-1'), 300, 100, 10, 20);
     renderer.render(graphLayout);
+    */
     </script>
 
   </body>
